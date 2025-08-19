@@ -5,6 +5,8 @@ import io, csv
 import json
 from datetime import datetime, timezone
 from dateutil import parser as dateparser
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 
 from .. import db
 from ..models import Rule, RuleCondition, Payload, PayloadLabel
@@ -241,24 +243,6 @@ def statistics():
                  for k, v in sorted(by_label.items(), key=lambda x: x[0])]
     return jsonify({"total_payloads": total, "by_label": breakdown})
 
-# @api_bp.route('/statistics/export', methods=['GET'])
-# def export_statistics():
-#     """
-#     Export statistics as CSV.
-#     """
-#     res = statistics().json
-#     output = StringIO()
-#     writer = csv.writer(output)
-#     writer.writerow(["label", "count", "percentage"])
-#     for row in res.get('by_label', []):
-#         writer.writerow([row['label'], row['count'], f"{row['percentage']:.2f}"])
-#     output.seek(0)
-#     return send_file(
-#         path_or_file=StringIO(output.read()),
-#         mimetype='text/csv',
-#         as_attachment=True,
-#         download_name='statistics.csv'
-#     )
 
 @api_bp.get('/statistics/export')
 def export_statistics():
@@ -270,6 +254,14 @@ def export_statistics():
     resp = statistics()
     stats = resp.get_json()  # <-- use get_json(), not .json
 
+    export_format = request.args.get('format', 'csv').lower()
+
+    if export_format == 'pdf':
+        return generate_pdf(stats)
+    else:
+        return generate_csv(stats)
+
+def generate_csv(stats):
     # Build CSV into a text buffer (newline='' to avoid blank lines on Windows)
     text_buf = io.StringIO(newline="")
     writer = csv.writer(text_buf)
@@ -294,3 +286,60 @@ def export_statistics():
         as_attachment=True,
         download_name=filename,
     )
+
+def generate_pdf(stats):
+    """
+    Generate statistics as a PDF file.
+    """
+    user_id = current_user_id()
+    filename = f"statistics_{user_id}_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}.pdf"
+
+    buffer = io.BytesIO()
+    c = canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter  # Page size
+
+    # Set up title and basic styles
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(50, height - 40, "Statistics Report")
+
+    c.setFont("Helvetica", 12)
+    c.drawString(50, height - 60, f"Total Payloads: {stats.get('total_payloads', 0)}")
+    c.drawString(50, height - 80, "Labels Breakdown:")
+
+    # Add table headers
+    y_position = height - 120
+    c.drawString(50, y_position, "Label")
+    c.drawString(200, y_position, "Count")
+    c.drawString(350, y_position, "Percentage")
+
+    # Add label breakdown
+    y_position -= 20
+    for row in stats.get("by_label", []):
+        c.drawString(50, y_position, row["label"])
+        c.drawString(200, y_position, str(row["count"]))
+        c.drawString(350, y_position, f'{row["percentage"]:.2f}%')
+        y_position -= 20
+
+        if y_position < 100:  # If page is too full, create a new page
+            c.showPage()
+            y_position = height - 40
+            c.setFont("Helvetica", 12)
+            c.drawString(50, y_position, "Labels Breakdown:")
+            y_position -= 20
+
+    # Optional totals
+    c.drawString(50, y_position - 20, f"Total Payloads: {stats.get('total_payloads', 0)}")
+
+    # Save the PDF
+    c.showPage()
+    c.save()
+
+    buffer.seek(0)
+
+    return send_file(
+        buffer,
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=filename,
+    )
+

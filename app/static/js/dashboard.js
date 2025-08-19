@@ -20,11 +20,56 @@ function buildQuery() {
   return p.toString();
 }
 
+// function setExportHref() {
+//   const q = buildQuery();
+//   const href = `${API_BASE}/statistics/export${q ? '?' + q : ''}`;
+//   document.getElementById('btn-export').href = href; // For CSV Export
+
+//   const pdfHref = `${API_BASE}/statistics/export${q ? '?' + q : ''}&format=pdf`;
+//   document.getElementById('btn-export-pdf').href = pdfHref; // For PDF Export
+// }
+
 function setExportHref() {
   const q = buildQuery();
-  const href = `${API_BASE}/statistics/export${q ? '?' + q : ''}`;
-  document.getElementById('btn-export').href = href;
+
+  // Set the export link for CSV
+  const csvHref = `${API_BASE}/statistics/export${q ? '?' + q : ''}`;
+  document.getElementById('btn-export').href = csvHref;
+
+  // Set the export link for PDF
+  const pdfHref = `${API_BASE}/statistics/export${q ? '?' + q : ''}&format=pdf`;
+  document.getElementById('btn-export-pdf').href = pdfHref;
 }
+
+document.getElementById('btn-export-pdf').onclick = async (event) => {
+  event.preventDefault(); // Prevent default link click behavior
+  
+  const q = buildQuery();
+  const exportFormat = 'pdf';
+  const url = `${API_BASE}/statistics/export?${q ? q + '&' : ''}format=${exportFormat}`;
+
+  try {
+    // Fetching the PDF from the server
+    const res = await fetch(url, { headers: USER_HEADER });
+
+    // Check for successful response
+    if (!res.ok) {
+      throw new Error('Failed to fetch PDF');
+    }
+
+    const blob = await res.blob(); // Get the response as a Blob (binary data)
+
+    // Create an object URL and trigger the download
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob); // Create an object URL for the Blob
+    link.download = `statistics_${new Date().toISOString()}.pdf`; // Set the default file name
+    link.click(); // Trigger the download
+  } catch (error) {
+    console.error('Error while exporting PDF:', error);
+  }
+};
+
+
 
 async function loadStats() {
   const q = buildQuery();
@@ -91,6 +136,5 @@ document.getElementById('btn-apply').onclick = () => loadStats();
 
 window.addEventListener('load', async () => {
   await loadStats();
-  // Live updates: poll every 5s
   setInterval(loadStats, 5000);
 });

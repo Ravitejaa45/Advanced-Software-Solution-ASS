@@ -165,7 +165,6 @@ document.getElementById('btn-add-group').onclick = () => {
   let maxg = 0; rows.forEach(r => { maxg = Math.max(maxg, parseInt(r.dataset.group||'1',10)); });
   addConditionRow(maxg+1, keys);
 };
-
 window.addEventListener('load', async () => {
   await loadRules();
 });
