@@ -139,7 +139,10 @@ async function processNow() {
   const out = document.getElementById('process-result');
   out.textContent = '';
   if (!obj) { out.textContent = 'Invalid JSON'; return; }
-  const res = await fetch(`${API_BASE}/process`, {
+
+  const singleLabel = document.getElementById('singleLabelChk')?.checked;
+  const url = `${API_BASE}/process${singleLabel ? '?single_label=true' : ''}`;
+  const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...USER_HEADER },
     body: JSON.stringify(obj)
