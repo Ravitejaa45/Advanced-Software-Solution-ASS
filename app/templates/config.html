@@ -61,6 +61,14 @@
     <button id="btn-process" class="btn btn-primary ms-2">Process</button>
   </div>
 </div>
+
+<div class="form-check mb-2">
+  <input class="form-check-input" type="checkbox" id="singleLabelChk">
+  <label class="form-check-label" for="singleLabelChk">
+    Single-label mode (highest priority wins)
+  </label>
+</div>
+
 <pre class="mt-3 small" id="process-result"></pre>
 
 <script src="{{ url_for('static', filename='js/config.js') }}"></script>
