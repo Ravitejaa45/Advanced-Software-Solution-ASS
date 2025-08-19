@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, send_file
 from sqlalchemy import and_
 from io import StringIO
-import csv
+import io, csv
 import json
 from datetime import datetime, timezone
 from dateutil import parser as dateparser
@@ -165,6 +165,7 @@ def process_payload():
     """
     uid = current_user_id()
     ensure_user(db.session, uid)
+
     payload = request.get_json(force=True, silent=True)
     if payload is None or not isinstance(payload, dict):
         return jsonify({"error": "Payload must be a JSON object"}), 400
@@ -180,10 +181,21 @@ def process_payload():
 
     labels, rule_ids = apply_rules(payload, rules)
 
+    single = request.args.get('single_label', 'false').lower() in {'1', 'true', 'yes'}
+    if single and rule_ids:
+        priority_by_id = {r['id']: r['priority'] for r in rules}
+        # pick the rule_id with the LOWEST priority number
+        top_rid = min(rule_ids, key=lambda rid: (priority_by_id.get(rid, 10**9), rid))
+        labels = [next(r['label'] for r in rules if r['id'] == top_rid)]
+        rule_ids = [top_rid]
+
     p = Payload(user_id=uid, payload_json=json.dumps(payload))
     db.session.add(p); db.session.flush()
-    for rid, lab in zip(rule_ids, [r['label'] for r in sorted(rules, key=lambda x: x['priority']) if r['id'] in rule_ids]):
-        db.session.add(PayloadLabel(payload_id=p.id, rule_id=rid, label=lab))
+
+    id_to_label = {r['id']: r['label'] for r in rules}
+    for rid in rule_ids:
+        db.session.add(PayloadLabel(payload_id=p.id, rule_id=rid, label=id_to_label[rid]))
+        
     db.session.commit()
 
     return jsonify({
@@ -229,21 +241,56 @@ def statistics():
                  for k, v in sorted(by_label.items(), key=lambda x: x[0])]
     return jsonify({"total_payloads": total, "by_label": breakdown})
 
-@api_bp.route('/statistics/export', methods=['GET'])
+# @api_bp.route('/statistics/export', methods=['GET'])
+# def export_statistics():
+#     """
+#     Export statistics as CSV.
+#     """
+#     res = statistics().json
+#     output = StringIO()
+#     writer = csv.writer(output)
+#     writer.writerow(["label", "count", "percentage"])
+#     for row in res.get('by_label', []):
+#         writer.writerow([row['label'], row['count'], f"{row['percentage']:.2f}"])
+#     output.seek(0)
+#     return send_file(
+#         path_or_file=StringIO(output.read()),
+#         mimetype='text/csv',
+#         as_attachment=True,
+#         download_name='statistics.csv'
+#     )
+
+@api_bp.get('/statistics/export')
 def export_statistics():
     """
-    Export statistics as CSV.
+    Export statistics as CSV (uses BytesIO so send_file works cross-platform).
+    Reuses the /api/statistics logic for user scoping & filters.
     """
-    res = statistics().json
-    output = StringIO()
-    writer = csv.writer(output)
+    # Call the existing endpoint to compute stats (includes X-User-Id + query params)
+    resp = statistics()
+    stats = resp.get_json()  # <-- use get_json(), not .json
+
+    # Build CSV into a text buffer (newline='' to avoid blank lines on Windows)
+    text_buf = io.StringIO(newline="")
+    writer = csv.writer(text_buf)
     writer.writerow(["label", "count", "percentage"])
-    for row in res.get('by_label', []):
-        writer.writerow([row['label'], row['count'], f"{row['percentage']:.2f}"])
-    output.seek(0)
+    for row in stats.get("by_label", []):
+        writer.writerow([row["label"], row["count"], f'{row["percentage"]:.2f}'])
+
+    # Optional totals line
+    writer.writerow([])
+    writer.writerow(["total_payloads", stats.get("total_payloads", 0)])
+
+    # Convert text -> bytes (with UTF-8 BOM so Excel opens cleanly), then send_file
+    byte_buf = io.BytesIO(text_buf.getvalue().encode("utf-8-sig"))
+    byte_buf.seek(0)
+
+    user_id = current_user_id()
+    filename = f"statistics_{user_id}_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}.csv"
+
     return send_file(
-        path_or_file=StringIO(output.read()),
-        mimetype='text/csv',
+        byte_buf,
+        mimetype="text/csv",
         as_attachment=True,
-        download_name='statistics.csv'
+        download_name=filename,
     )
