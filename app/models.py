@@ -54,8 +54,8 @@ class Payload(db.Model):
 class PayloadLabel(db.Model):
     __tablename__ = 'payload_labels'
     payload_id = db.Column(db.Integer, db.ForeignKey('payloads.id'), primary_key=True)
-    rule_id = db.Column(db.Integer, db.ForeignKey('rules.id'))
-    label = db.Column(db.String(128), index=True)
+    rule_id = db.Column(db.Integer, db.ForeignKey('rules.id'), primary_key=True)
+    label = db.Column(db.String(128), index=True, nullable=False)
 
 def seed_demo_data():
     """Create demo user + a few demo rules for 'Chocolate' pricing bands."""
