@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<h3 class="mb-3">Dashboard</h3>
+
+<div class="row g-3">
+  <div class="col-md-3">
+    <label class="form-label">Label</label>
+    <input id="filter-label" class="form-control" placeholder="(optional, e.g., Green)"/>
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">From (ISO)</label>
+    <input id="filter-from" class="form-control" placeholder="2025-08-01T00:00:00Z"/>
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">To (ISO)</label>
+    <input id="filter-to" class="form-control" placeholder="2025-08-31T23:59:59Z"/>
+  </div>
+  <div class="col-md-3 d-flex align-items-end">
+    <button id="btn-apply" class="btn btn-primary">Apply Filters</button>
+    <a id="btn-export" class="btn btn-outline-secondary ms-2" href="#">Export CSV</a>
+  </div>
+</div>
+
+<div class="mt-4">
+  <h5>Total Payloads: <span id="total-count">0</span></h5>
+</div>
+
+<div class="row mt-2">
+  <div class="col-md-6">
+    <canvas id="pieChart"></canvas>
+  </div>
+  <div class="col-md-6">
+    <canvas id="barChart"></canvas>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
