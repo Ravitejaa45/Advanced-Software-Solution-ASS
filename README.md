@@ -1,4 +1,4 @@
-# Advanced Software Solution (ASS)
+# Advanced Software Solution (ASS) - Data Labeling System - [Demo Link](https://advanced-software-solution-ass.onrender.com/) 
 
 An intelligent, **real-time labeling service** that assigns labels to incoming JSON payloads using **user-defined rules**. It includes a clean web UI for configuring rules, a live **analytics dashboard**, and a **REST API** for programmatic ingestion.
 
@@ -17,6 +17,16 @@ Turn arbitrary JSON streams into a **consistent, labeled data feed**:
 - Support **per-user isolation** using `X-User-Id` header (rules/payloads/stats are scoped).
 
 - Ship with **demo rules** (Chocolate pricing bands) for instant testing.
+
+### Real-Time Updates with WebSocket
+
+The **Dashboard** uses **Socket.io** to receive real-time updates on statistics.
+
+**Backend (`api.py`)** emits the event `stats_update` whenever there are new statistics to send:
+
+```python
+socketio.emit('stats_update', stats)
+```
 
 ### Under the hood
 
@@ -181,6 +191,20 @@ Invoke-RestMethod -Method Get `
   -Uri "http://127.0.0.1:5000/api/statistics?label=Green" `
   -Headers @{ "X-User-Id" = "demo_user" }
 ```
+## API Endpoints
+
+### Rules Management
+
+- `POST /api/rules `   → Create new rule
+- `GET /api/rules` → Get all rules
+- `PUT /api/rules/:id` → Update existing rule
+- `DELETE /api/rules/:id` → Delete rule
+- `POST /api/rules/:id/toggle` → Enable/disable rule
+
+### Data Processing
+
+- `POST /api/process` → Process incoming JSON payload
+- `GET /api/statistics` → Get processing statistics
 
 
 ## Sample Use Case
