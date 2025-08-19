@@ -3,6 +3,12 @@ const USER_HEADER = { 'X-User-Id': 'demo_user' };
 
 let pieChart, barChart;
 
+const labelColors = {
+  'Green': '#28a745',
+  'Red': '#dc3545',
+  'Yellow': '#ffc107'
+};
+
 function buildQuery() {
   const label = document.getElementById('filter-label').value.trim();
   const from = document.getElementById('filter-from').value.trim();
@@ -28,14 +34,27 @@ async function loadStats() {
 
   const labels = (data.by_label || []).map(r => r.label);
   const counts = (data.by_label || []).map(r => r.count);
+  const colors = labels.map(label => labelColors[label] || '#6c757d');
 
   // Pie
   const pieCtx = document.getElementById('pieChart');
   if (pieChart) pieChart.destroy();
   pieChart = new Chart(pieCtx, {
     type: 'pie',
-    data: { labels, datasets: [{ data: counts }] },
-    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+    data: {
+      labels,
+      datasets: [{
+        data: counts,
+        backgroundColor: colors,
+        hoverBackgroundColor: colors
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom' }
+      }
+    }
   });
 
   // Bar
@@ -43,9 +62,27 @@ async function loadStats() {
   if (barChart) barChart.destroy();
   barChart = new Chart(barCtx, {
     type: 'bar',
-    data: { labels, datasets: [{ data: counts, label: 'Count' }] },
-    options: { responsive: true, plugins: { legend: { display: false } } }
+    data: {
+      labels,
+      datasets: [{
+        data: counts,
+        label: 'Count',
+        backgroundColor: colors,
+        borderColor: colors,
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
   });
+
 
   setExportHref();
 }
