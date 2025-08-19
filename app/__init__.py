@@ -12,10 +12,10 @@ def create_app():
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret')
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
         'DATABASE_URL',
-        'sqlite:///' + os.path.join(app.instance_path, 'stratsync.db')
+        'sqlite:///' + os.path.join(app.instance_path, 'ass.db')
     )
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['SWAGGER'] = {'title': 'StratSync Data Labeling API', 'uiversion': 3}
+    app.config['SWAGGER'] = {'title': 'ASS Data Labeling API', 'uiversion': 3}
 
     db.init_app(app)
     Swagger(app)
