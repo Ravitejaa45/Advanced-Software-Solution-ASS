@@ -1,5 +1,5 @@
 import argparse
-from app import create_app, db
+from app import create_app, db, socketio
 from app.models import seed_demo_data
 
 def main():
@@ -16,7 +16,7 @@ def main():
         if args.loaddemo:
             seed_demo_data()
             print("Loaded demo rules.")
-    app.run(debug=True)
+    socketio.run(app, debug=True)
 
 if __name__ == "__main__":
     main()

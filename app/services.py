@@ -6,14 +6,7 @@ from .models import User
 from . import db
 
 def current_user_id():
-    """Extract user id from header; default for demo."""
     return request.headers.get('X-User-Id', 'demo_user')
-
-# def ensure_user(db_session, uid: str):
-#     """Create a user row if absent (simple demo mechanism)."""
-#     if uid and not User.query.get(uid):
-#         db_session.add(User(id=uid, email=None, name=None))
-#         db_session.commit()
 
 def ensure_user(db_session, uid: str):
     if uid and db_session.get(User, uid) is None:
@@ -27,7 +20,6 @@ def parse_iso_date(s: str):
         return None
 
 def extract_keys_recursive(obj, prefix="", acc=None):
-    """Return list of dot-keys for dicts/lists."""
     if acc is None: acc = []
     if isinstance(obj, dict):
         for k, v in obj.items():
@@ -35,9 +27,8 @@ def extract_keys_recursive(obj, prefix="", acc=None):
             acc.append(path)
             extract_keys_recursive(v, path, acc)
     elif isinstance(obj, list):
-        # For arrays, include index wildcard notation (e.g., items[].price)
         path = f"{prefix}[]" if prefix else "[]"
         acc.append(path)
-        for i, v in enumerate(obj[:3]):  # sample first few for shape
+        for i, v in enumerate(obj[:3]):
             extract_keys_recursive(v, f"{prefix}[{i}]", acc)
     return acc

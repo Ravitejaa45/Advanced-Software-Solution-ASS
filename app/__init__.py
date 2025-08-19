@@ -2,8 +2,11 @@ import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flasgger import Swagger
+from flask_socketio import SocketIO
 
 db = SQLAlchemy()
+
+socketio = SocketIO()
 
 def create_app():
     app = Flask(__name__, instance_relative_config=True)
@@ -18,6 +21,7 @@ def create_app():
     app.config['SWAGGER'] = {'title': 'ASS Data Labeling API', 'uiversion': 3}
 
     db.init_app(app)
+    socketio.init_app(app)
     Swagger(app)
 
     from .routes.api import api_bp

@@ -160,7 +160,6 @@ document.getElementById('btn-add-condition').onclick = () => {
 };
 document.getElementById('btn-add-group').onclick = () => {
   const keys = Array.from(document.getElementById('available-keys').options).map(o=>o.value);
-  // new group id = current max + 1
   const rows = document.querySelectorAll('.condition-row');
   let maxg = 0; rows.forEach(r => { maxg = Math.max(maxg, parseInt(r.dataset.group||'1',10)); });
   addConditionRow(maxg+1, keys);

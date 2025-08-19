@@ -14,7 +14,7 @@ def test_rule_no_match():
 def test_or_groups():
     payload = {"CompanyName": "Google", "Price": 10}
     conds = [
-        (1, "=", "CompanyName", "Google"),  # group 1 -> true
+        (1, "=", "CompanyName", "Google"),
         (2, "=", "CompanyName", "Amazon"),
         (2, "<", "Price", 2.5),
     ]

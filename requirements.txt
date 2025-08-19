@@ -4,3 +4,4 @@ flasgger==0.9.7.1
 python-dateutil==2.9.0.post0
 gunicorn
 reportlab
+flask_socketio
