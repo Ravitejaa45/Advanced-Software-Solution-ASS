@@ -5,8 +5,6 @@ import io, csv
 import json
 from datetime import datetime, timezone
 from dateutil import parser as dateparser
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
 from flask_socketio import SocketIO, emit
 from app import socketio 
 
