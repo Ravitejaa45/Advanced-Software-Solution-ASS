@@ -88,14 +88,27 @@ function setExportHref() {
 
   const csvHref = `${API_BASE}/statistics/export${q ? "?" + q : ""}`;
   document.getElementById("btn-export").href = csvHref;
-
-  // const pdfHref = `${API_BASE}/statistics/export${
-  //   q ? "?" + q + "&" : "?"
-  // }format=pdf`;
-  // // document.getElementById('btn-export-pdf').href = pdfHref;
 }
 
-document.getElementById("btn-apply").onclick = () => loadStats();
+document.getElementById("btn-apply").onclick = async () => {
+  const btn = document.getElementById("btn-apply");
+  btn.textContent = "Applying...";
+  btn.disabled = true;
+  try {
+    await loadStats();
+    btn.textContent = "Applied!";
+    setTimeout(() => {
+      btn.textContent = "Apply Filters";
+      btn.disabled = false;
+    }, 1500);
+  } catch (err) {
+    btn.textContent = "Error!";
+    setTimeout(() => {
+      btn.textContent = "Apply Filters";
+      btn.disabled = false;
+    }, 2000);
+  }
+};
 
 window.addEventListener("load", async () => {
   await loadStats();
@@ -118,60 +131,6 @@ async function loadStats() {
     headers: USER_HEADER,
   });
   const data = await res.json();
-  document.getElementById("total-count").textContent = data.total_payloads ?? 0;
-
-  const labels = (data.by_label || []).map((r) => r.label);
-  const counts = (data.by_label || []).map((r) => r.count);
-  const colors = labels.map((label) => labelColors[label] || "#6c757d");
-
-  const pieCtx = document.getElementById("pieChart");
-  if (pieChart) pieChart.destroy();
-  pieChart = new Chart(pieCtx, {
-    type: "pie",
-    data: {
-      labels,
-      datasets: [
-        {
-          data: counts,
-          backgroundColor: colors,
-          hoverBackgroundColor: colors,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { position: "bottom" },
-      },
-    },
-  });
-
-  const barCtx = document.getElementById("barChart");
-  if (barChart) barChart.destroy();
-  barChart = new Chart(barCtx, {
-    type: "bar",
-    data: {
-      labels,
-      datasets: [
-        {
-          data: counts,
-          label: "Count",
-          backgroundColor: colors,
-          borderColor: colors,
-          borderWidth: 1,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false },
-      },
-      scales: {
-        y: { beginAtZero: true },
-      },
-    },
-  });
 
   setExportHref();
 }
