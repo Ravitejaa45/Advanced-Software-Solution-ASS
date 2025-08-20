@@ -1,24 +1,39 @@
-{% extends "base.html" %}
-{% block content %}
+{% extends "base.html" %} {% block content %}
 <h3 class="mb-3">Dashboard</h3>
 
 <div class="row g-3">
   <div class="col-md-3">
     <label class="form-label">Label</label>
-    <input id="filter-label" class="form-control" placeholder="(optional, e.g., Green)"/>
+    <input
+      id="filter-label"
+      class="form-control"
+      placeholder="(optional, e.g., Green)"
+    />
   </div>
   <div class="col-md-3">
     <label class="form-label">From (ISO)</label>
-    <input id="filter-from" class="form-control" placeholder="2025-08-01T00:00:00Z"/>
+    <input
+      id="filter-from"
+      class="form-control"
+      placeholder="2025-08-01T00:00:00Z"
+    />
   </div>
   <div class="col-md-3">
     <label class="form-label">To (ISO)</label>
-    <input id="filter-to" class="form-control" placeholder="2025-08-31T23:59:59Z"/>
+    <input
+      id="filter-to"
+      class="form-control"
+      placeholder="2025-08-31T23:59:59Z"
+    />
   </div>
   <div class="col-md-3 d-flex align-items-end">
     <button id="btn-apply" class="btn btn-primary">Apply Filters</button>
-    <a id="btn-export" class="btn btn-outline-secondary ms-2" href="#">Export CSV</a>
-    <!-- <a id="btn-export-pdf" class="btn btn-outline-danger ms-2" href="#">Export PDF</a> -->
+    <a id="btn-export" class="btn btn-outline-secondary ms-2" href="#"
+      >Export CSV</a
+    >
+    <!-- <a id="btn-export-pdf" class="btn btn-outline-danger ms-2" href="#"
+      >Export PDF</a
+    > -->
   </div>
 </div>
 
@@ -35,6 +50,6 @@
   </div>
 </div>
 
-<script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+<script src="https://cdn.socket.io/3.1.3/socket.io.min.js"></script>
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 {% endblock %}

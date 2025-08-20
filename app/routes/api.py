@@ -260,12 +260,24 @@ def export_statistics():
     resp = statistics()
     stats = resp.get_json()
 
-    export_format = request.args.get('format', 'csv').lower()
+    return generate_csv(stats)
 
-    if export_format == 'pdf':
-        return generate_pdf(stats)
-    else:
-        return generate_csv(stats)
+    # export_format = request.args.get('format', 'csv').lower()
+
+    # if export_format == 'pdf':
+    #     return generate_pdf(stats)
+    # else:
+    #     return generate_csv(stats)
+    
+# @api_bp.get('/statistics/export.pdf')
+# def export_statistics_pdf():
+#     resp = statistics()
+#     return generate_pdf(resp.get_json())
+
+@api_bp.get('/statistics/export.csv')
+def export_statistics_csv():
+    resp = statistics()
+    return generate_csv(resp.get_json())
 
 def generate_csv(stats):
     text_buf = io.StringIO(newline="")
@@ -290,51 +302,51 @@ def generate_csv(stats):
         download_name=filename,
     )
 
-def generate_pdf(stats):
-    user_id = current_user_id()
-    filename = f"statistics_{user_id}_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}.pdf"
+# def generate_pdf(stats):
+#     user_id = current_user_id()
+#     filename = f"statistics_{user_id}_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}.pdf"
 
-    buffer = io.BytesIO()
-    c = canvas.Canvas(buffer, pagesize=letter)
-    width, height = letter
+#     buffer = io.BytesIO()
+#     c = canvas.Canvas(buffer, pagesize=letter)
+#     width, height = letter
 
-    c.setFont("Helvetica-Bold", 16)
-    c.drawString(50, height - 40, "Statistics Report")
+#     c.setFont("Helvetica-Bold", 16)
+#     c.drawString(50, height - 40, "Statistics Report")
 
-    c.setFont("Helvetica", 12)
-    c.drawString(50, height - 60, f"Total Payloads: {stats.get('total_payloads', 0)}")
-    c.drawString(50, height - 80, "Labels Breakdown:")
+#     c.setFont("Helvetica", 12)
+#     c.drawString(50, height - 60, f"Total Payloads: {stats.get('total_payloads', 0)}")
+#     c.drawString(50, height - 80, "Labels Breakdown:")
 
-    y_position = height - 120
-    c.drawString(50, y_position, "Label")
-    c.drawString(200, y_position, "Count")
-    c.drawString(350, y_position, "Percentage")
+#     y_position = height - 120
+#     c.drawString(50, y_position, "Label")
+#     c.drawString(200, y_position, "Count")
+#     c.drawString(350, y_position, "Percentage")
 
-    y_position -= 20
-    for row in stats.get("by_label", []):
-        c.drawString(50, y_position, row["label"])
-        c.drawString(200, y_position, str(row["count"]))
-        c.drawString(350, y_position, f'{row["percentage"]:.2f}%')
-        y_position -= 20
+#     y_position -= 20
+#     for row in stats.get("by_label", []):
+#         c.drawString(50, y_position, row["label"])
+#         c.drawString(200, y_position, str(row["count"]))
+#         c.drawString(350, y_position, f'{row["percentage"]:.2f}%')
+#         y_position -= 20
 
-        if y_position < 100:
-            c.showPage()
-            y_position = height - 40
-            c.setFont("Helvetica", 12)
-            c.drawString(50, y_position, "Labels Breakdown:")
-            y_position -= 20
+#         if y_position < 100:
+#             c.showPage()
+#             y_position = height - 40
+#             c.setFont("Helvetica", 12)
+#             c.drawString(50, y_position, "Labels Breakdown:")
+#             y_position -= 20
 
-    c.drawString(50, y_position - 20, f"Total Payloads: {stats.get('total_payloads', 0)}")
+#     c.drawString(50, y_position - 20, f"Total Payloads: {stats.get('total_payloads', 0)}")
 
-    c.showPage()
-    c.save()
+#     c.showPage()
+#     c.save()
 
-    buffer.seek(0)
+#     buffer.seek(0)
 
-    return send_file(
-        buffer,
-        mimetype="application/pdf",
-        as_attachment=True,
-        download_name=filename,
-    )
+#     return send_file(
+#         buffer,
+#         mimetype="application/pdf",
+#         as_attachment=True,
+#         download_name=filename,
+#     )
 
