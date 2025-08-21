@@ -80,6 +80,7 @@ function updateStats(stats) {
 }
 
 socket.on("stats_update", function (stats) {
+  console.log("stats_update");
   updateStats(stats);
 });
 
@@ -131,6 +132,6 @@ async function loadStats() {
     headers: USER_HEADER,
   });
   const data = await res.json();
-
+  updateStats(data);
   setExportHref();
 }
