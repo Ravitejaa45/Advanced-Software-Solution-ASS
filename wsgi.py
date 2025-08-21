@@ -1,6 +1,11 @@
+import eventlet
+
+eventlet.monkey_patch()
+
 from app import create_app, db
 from app.models import seed_demo_data
 import os
+
 
 app = create_app()
 
